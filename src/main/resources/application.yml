@@ -8,4 +8,8 @@ moex:
     government:
       url: "https://iss.moex.com/iss/engines/stock/markets/bonds/boards/TQOB/securities.xml?iss.meta=off&iss.only=securities&securities.columns=SECID,PREVADMITTEDQUOTE,SHORTNAME"
 
+logging:
+  level:
+    com.eralash.moexservice.moexClient : DEBUG
+
 

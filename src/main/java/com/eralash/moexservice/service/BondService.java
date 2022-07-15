@@ -11,6 +11,8 @@ import com.eralash.moexservice.moexClient.GovBondsClient;
 import com.eralash.moexservice.parser.Parser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -21,14 +23,15 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 public class BondService {
-    private final CorporateBondsClient corporateBondsClient;
-    private final GovBondsClient govBondsClient;
-    private final Parser parser;
+    private final BondRepository bondRepository;
+    private final CacheManager cacheManager;
+
+
 
     public StocksDto getBondsFromMoex(TickersDto tickersDto){
         List<BondDto>allBonds = new ArrayList<>();
-        allBonds.addAll(getCorporateBonds());
-        allBonds.addAll(getGovBonds());
+        allBonds.addAll(bondRepository.getCorporateBonds());
+        allBonds.addAll(bondRepository.getGovBonds());
          List<BondDto>resultBonds = allBonds.stream().filter(bondDto ->
                  tickersDto.getTickers().contains(bondDto.getTicker()))
                  .collect(Collectors.toList());
@@ -45,30 +48,5 @@ public class BondService {
         return new StocksDto(stocks);
 
     }
-
-    public List<BondDto> getCorporateBonds() {
-        log.info("Getting corp bonds from moex");
-        String xmlFromMoex = corporateBondsClient.getBondsFromMoex();
-        List<BondDto> bondDtos = parser.parser(xmlFromMoex);
-        if(bondDtos.isEmpty()){
-            log.error("Moex isn't answering for getting corporate bonds");
-            throw  new LimitsRequestException("Moex isn't answering for getting corporate bonds");
-        }
-        return bondDtos;
-    }
-
-    public List<BondDto> getGovBonds() {
-        log.info("Getting gov bonds from moex");
-        String xmlFromMoex = corporateBondsClient.getBondsFromMoex();
-        List<BondDto> bonds = parser.parser(xmlFromMoex);
-        if(bonds.isEmpty()){
-            log.error("Moex isn't answering for getting corporate bonds");
-            throw  new LimitsRequestException("Moex isn't answering for getting corporate bonds");
-        }
-        return bonds;
-    }
-
-
-
 
 }
